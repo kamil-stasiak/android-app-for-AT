@@ -9,36 +9,43 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
 import android.view.inputmethod.EditorInfo
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ProgressBar
-import android.widget.Toast
-import androidx.lifecycle.ViewModelProvider
+import android.widget.*
+import me.stasiak.loginacctivity.DaggerAppComponent
+import me.stasiak.loginacctivity.Info
 
 import me.stasiak.loginacctivity.R
+import javax.inject.Inject
 
 class LoginActivity : AppCompatActivity() {
 
-    private lateinit var loginViewModel: LoginViewModel
+    @Inject
+    lateinit var loginViewModel: LoginViewModel
+
+    @Inject
+    lateinit var info: Info
+
+    @Inject
+    lateinit var info2: Info
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        DaggerAppComponent.create().inject(this)
 
         setContentView(R.layout.activity_login)
 
         val username = findViewById<EditText>(R.id.username)
         val password = findViewById<EditText>(R.id.password)
-        val login = findViewById<Button>(R.id.login)
+        val loginButton = findViewById<Button>(R.id.login)
         val loading = findViewById<ProgressBar>(R.id.loading)
+        val infoText = findViewById<TextView>(R.id.info)
 
-        loginViewModel = ViewModelProvider(this, LoginViewModelFactory())
-            .get(LoginViewModel::class.java)
+        infoText.text = "${info.toString()} +++ ${info2.toString()}"
 
         loginViewModel.loginFormState.observe(this@LoginActivity, Observer {
             val loginState = it ?: return@Observer
 
             // disable login button unless both username / password is valid
-            login.isEnabled = loginState.isDataValid
+            loginButton.isEnabled = loginState.isDataValid
 
             if (loginState.usernameError != null) {
                 username.error = getString(loginState.usernameError)
@@ -54,7 +61,7 @@ class LoginActivity : AppCompatActivity() {
             loading.visibility = View.GONE
 
             loginResult.mapLeft { showLoginFailed(it) }
-            loginResult.map{ updateUiWithUser(it) }
+            loginResult.map { updateUiWithUser(it) }
 
             setResult(Activity.RESULT_OK)
 
@@ -88,7 +95,7 @@ class LoginActivity : AppCompatActivity() {
                 false
             }
 
-            login.setOnClickListener {
+            loginButton.setOnClickListener {
                 loading.visibility = View.VISIBLE
                 loginViewModel.login(username.text.toString(), password.text.toString())
             }
