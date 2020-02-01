@@ -18,6 +18,12 @@ import javax.inject.Inject
 
 class LoginActivity : AppCompatActivity() {
 
+    val username: EditText by lazy { findViewById<EditText>(R.id.username) }
+    val password: EditText by lazy { findViewById<EditText>(R.id.password) }
+    val loginButton: Button by lazy { findViewById<Button>(R.id.login) }
+    val loading: ProgressBar by lazy { findViewById<ProgressBar>(R.id.loading) }
+    val infoText: TextView by lazy { findViewById<TextView>(R.id.info) }
+
     @Inject
     lateinit var loginViewModel: LoginViewModel
 
@@ -32,12 +38,6 @@ class LoginActivity : AppCompatActivity() {
         DaggerAppComponent.create().inject(this)
 
         setContentView(R.layout.activity_login)
-
-        val username = findViewById<EditText>(R.id.username)
-        val password = findViewById<EditText>(R.id.password)
-        val loginButton = findViewById<Button>(R.id.login)
-        val loading = findViewById<ProgressBar>(R.id.loading)
-        val infoText = findViewById<TextView>(R.id.info)
 
         infoText.text = "${info.toString()} +++ ${info2.toString()}"
 
