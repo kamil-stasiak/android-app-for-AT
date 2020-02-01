@@ -1,5 +1,6 @@
 package me.stasiak.loginacctivity.data
 
+import arrow.core.Either
 import me.stasiak.loginacctivity.data.model.LoggedInUser
 import java.io.IOException
 
@@ -8,13 +9,13 @@ import java.io.IOException
  */
 class LoginDataSource {
 
-    fun login(username: String, password: String): Result<LoggedInUser> {
+    fun login(username: String, password: String): Either<IOException, LoggedInUser> {
         try {
             // TODO: handle loggedInUser authentication
-            val fakeUser = LoggedInUser(java.util.UUID.randomUUID().toString(), "Jane Doe")
-            return Result.Success(fakeUser)
+            val fakeUser = LoggedInUser(java.util.UUID.randomUUID().toString(), "$username (${password.length})")
+            return Either.right(fakeUser)
         } catch (e: Throwable) {
-            return Result.Error(IOException("Error logging in", e))
+            return Either.left(IOException("Error logging in", e))
         }
     }
 

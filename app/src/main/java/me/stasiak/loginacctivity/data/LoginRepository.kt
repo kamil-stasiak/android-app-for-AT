@@ -1,6 +1,9 @@
 package me.stasiak.loginacctivity.data
 
+import arrow.core.Either
+import arrow.core.getOrElse
 import me.stasiak.loginacctivity.data.model.LoggedInUser
+import java.io.IOException
 
 /**
  * Class that requests authentication and user information from the remote data source and
@@ -27,13 +30,11 @@ class LoginRepository(val dataSource: LoginDataSource) {
         dataSource.logout()
     }
 
-    fun login(username: String, password: String): Result<LoggedInUser> {
+    fun login(username: String, password: String): Either<IOException, LoggedInUser> {
         // handle login
         val result = dataSource.login(username, password)
 
-        if (result is Result.Success) {
-            setLoggedInUser(result.data)
-        }
+        result.map { setLoggedInUser(it) }
 
         return result
     }
