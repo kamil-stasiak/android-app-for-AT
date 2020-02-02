@@ -11,11 +11,11 @@ import java.util.*
 class LoginDataSource {
 
     fun login(username: String, password: String): Either<IOException, LoggedInUser> {
-        try {
+        return try {
             // TODO: handle loggedInUser authentication
-            return Either.right(LoggedInUser(UUID.randomUUID().toString(), "$username (${password.length})"))
+            Either.right(LoggedInUser(UUID.randomUUID().toString(), "$username (${password.length})"))
         } catch (e: Throwable) {
-            return Either.left(IOException("Error logging in", e))
+            Either.left(IOException("Error logging in", e))
         }
     }
 

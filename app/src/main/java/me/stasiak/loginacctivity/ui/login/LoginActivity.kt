@@ -10,6 +10,7 @@ import android.text.TextWatcher
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.*
+import arrow.core.Either
 import me.stasiak.loginacctivity.DaggerAppComponent
 import me.stasiak.loginacctivity.Info
 
@@ -60,8 +61,9 @@ class LoginActivity : AppCompatActivity() {
 
             loading.visibility = View.GONE
 
-            loginResult.mapLeft { showLoginFailed(it) }
-            loginResult.map { updateUiWithUser(it) }
+            loginResult.fold(
+                { showLoginFailed(it) },
+                { updateUiWithUser(it) })
 
             setResult(Activity.RESULT_OK)
 

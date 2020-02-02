@@ -21,8 +21,10 @@ class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel()
         // can be launched in a separate asynchronous job
         val result = loginRepository.login(username, password)
 
-        result.map { _loginResult.value = Either.right(LoggedInUserView(displayName = it.displayName)) }
-        result.mapLeft { _loginResult.value = Either.left(R.string.login_failed) }
+        result.fold(
+            { _loginResult.value = Either.left(R.string.login_failed) },
+            { _loginResult.value = Either.right(LoggedInUserView(displayName = it.displayName)) }
+        )
     }
 
     fun loginDataChanged(username: String, password: String) {
