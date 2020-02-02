@@ -1,8 +1,10 @@
 package me.stasiak.loginacctivity.ui.login
 
 import android.app.Activity
+import android.content.Intent
 import androidx.lifecycle.Observer
 import android.os.Bundle
+import android.provider.AlarmClock.EXTRA_MESSAGE
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
 import android.text.Editable
@@ -15,6 +17,7 @@ import me.stasiak.loginacctivity.DaggerAppComponent
 import me.stasiak.loginacctivity.Info
 
 import me.stasiak.loginacctivity.R
+import me.stasiak.loginacctivity.ui.home.HomeActivity
 import javax.inject.Inject
 
 class LoginActivity : AppCompatActivity() {
@@ -68,6 +71,9 @@ class LoginActivity : AppCompatActivity() {
             loginResult.fold(
                 { showLoginFailed(it) },
                 { updateUiWithUser(it) })
+
+            val intent = Intent(this, HomeActivity::class.java);
+            startActivity(intent)
 
             setResult(Activity.RESULT_OK)
 
