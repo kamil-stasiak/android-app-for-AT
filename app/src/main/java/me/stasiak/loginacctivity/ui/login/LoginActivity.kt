@@ -10,7 +10,7 @@ import android.text.TextWatcher
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.*
-import arrow.core.Either
+import kotlinx.android.synthetic.main.activity_login.*
 import me.stasiak.loginacctivity.DaggerAppComponent
 import me.stasiak.loginacctivity.Info
 
@@ -19,15 +19,17 @@ import javax.inject.Inject
 
 class LoginActivity : AppCompatActivity() {
 
-    val username: EditText by lazy { findViewById<EditText>(R.id.username) }
-    val password: EditText by lazy { findViewById<EditText>(R.id.password) }
-    val loginButton: Button by lazy { findViewById<Button>(R.id.login) }
-    val loading: ProgressBar by lazy { findViewById<ProgressBar>(R.id.loading) }
-    val infoText: TextView by lazy { findViewById<TextView>(R.id.info) }
+    // not required, added only for aliases
+    val usernameInput: EditText by lazy { findViewById<EditText>(R.id.loginViewUsernameInput) }
+    val passwordInput: EditText by lazy { findViewById<EditText>(R.id.loginViewPasswordInput) }
+    val loginButton: Button by lazy { findViewById<Button>(R.id.loginViewLoginButton) }
+    val loadingIndicator: ProgressBar by lazy { findViewById<ProgressBar>(R.id.loadingIndicator) }
+    val infoAlias: TextView by lazy { findViewById<TextView>(R.id.infoTextView) }
 
     @Inject
     lateinit var loginViewModel: LoginViewModel
 
+    // for singleton test
     @Inject
     lateinit var info: Info
 
@@ -40,7 +42,9 @@ class LoginActivity : AppCompatActivity() {
 
         setContentView(R.layout.activity_login)
 
-        infoText.text = "${info.toString()} +++ ${info2.toString()}"
+        // Alias example, both infoTextView (@+id/infoTextView) and infoAlias (findViewById) works
+        // infoTextView.text = "Is info singleton? ${info === info2}"
+        infoAlias.text = "Is info singleton? ${info === info2}"
 
         loginViewModel.loginFormState.observe(this@LoginActivity, Observer {
             val loginState = it ?: return@Observer
@@ -49,17 +53,17 @@ class LoginActivity : AppCompatActivity() {
             loginButton.isEnabled = loginState.isDataValid
 
             if (loginState.usernameError != null) {
-                username.error = getString(loginState.usernameError)
+                usernameInput.error = getString(loginState.usernameError)
             }
             if (loginState.passwordError != null) {
-                password.error = getString(loginState.passwordError)
+                passwordInput.error = getString(loginState.passwordError)
             }
         })
 
         loginViewModel.loginResult.observe(this@LoginActivity, Observer {
             val loginResult = it ?: return@Observer
 
-            loading.visibility = View.GONE
+            loadingIndicator.visibility = View.GONE
 
             loginResult.fold(
                 { showLoginFailed(it) },
@@ -71,18 +75,18 @@ class LoginActivity : AppCompatActivity() {
             finish()
         })
 
-        username.afterTextChanged {
+        usernameInput.afterTextChanged {
             loginViewModel.loginDataChanged(
-                username.text.toString(),
-                password.text.toString()
+                usernameInput.text.toString(),
+                passwordInput.text.toString()
             )
         }
 
-        password.apply {
+        passwordInput.apply {
             afterTextChanged {
                 loginViewModel.loginDataChanged(
-                    username.text.toString(),
-                    password.text.toString()
+                    usernameInput.text.toString(),
+                    passwordInput.text.toString()
                 )
             }
 
@@ -90,16 +94,16 @@ class LoginActivity : AppCompatActivity() {
                 when (actionId) {
                     EditorInfo.IME_ACTION_DONE ->
                         loginViewModel.login(
-                            username.text.toString(),
-                            password.text.toString()
+                            usernameInput.text.toString(),
+                            passwordInput.text.toString()
                         )
                 }
                 false
             }
 
             loginButton.setOnClickListener {
-                loading.visibility = View.VISIBLE
-                loginViewModel.login(username.text.toString(), password.text.toString())
+                loadingIndicator.visibility = View.VISIBLE
+                loginViewModel.login(usernameInput.text.toString(), passwordInput.text.toString())
             }
         }
     }
