@@ -2,23 +2,31 @@ package me.stasiak.loginacctivity.ui.login
 
 import android.app.Activity
 import android.content.Intent
-import androidx.lifecycle.Observer
+import android.os.AsyncTask
 import android.os.Bundle
-import android.provider.AlarmClock.EXTRA_MESSAGE
-import androidx.annotation.StringRes
-import androidx.appcompat.app.AppCompatActivity
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.*
-import kotlinx.android.synthetic.main.activity_login.*
-import me.stasiak.loginacctivity.DaggerAppComponent
+import androidx.annotation.StringRes
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Observer
+import me.stasiak.loginacctivity.App
 import me.stasiak.loginacctivity.Info
-
 import me.stasiak.loginacctivity.R
+import me.stasiak.loginacctivity.db.AppDatabase
+import me.stasiak.loginacctivity.db.User
+import me.stasiak.loginacctivity.db.UserDao
 import me.stasiak.loginacctivity.ui.home.HomeActivity
 import javax.inject.Inject
+
+class doAsync(val handler: () -> Unit) : AsyncTask<Void, Void, Void>() {
+    override fun doInBackground(vararg params: Void?): Void? {
+        handler()
+        return null
+    }
+}
 
 class LoginActivity : AppCompatActivity() {
 
@@ -32,6 +40,12 @@ class LoginActivity : AppCompatActivity() {
     @Inject
     lateinit var loginViewModel: LoginViewModel
 
+    @Inject
+    lateinit var userDao: UserDao
+
+    @Inject
+    lateinit var database: AppDatabase
+
     // for singleton test
     @Inject
     lateinit var info: Info
@@ -41,13 +55,14 @@ class LoginActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        DaggerAppComponent.create().inject(this)
+        (application as App).appComponent.inject(this)
 
         setContentView(R.layout.activity_login)
 
         // Alias example, both infoTextView (@+id/infoTextView) and infoAlias (findViewById) works
         // infoTextView.text = "Is info singleton? ${info === info2}"
-        infoAlias.text = "Is info singleton? ${info === info2}"
+//        infoAlias.text = "Is info singleton? ${info === info2}"
+//        infoAlias.text = database.toString()
 
         loginViewModel.loginFormState.observe(this@LoginActivity, Observer {
             val loginState = it ?: return@Observer
@@ -70,11 +85,21 @@ class LoginActivity : AppCompatActivity() {
 
             loginResult.fold(
                 { showLoginFailed(it) },
-                { updateUiWithUser(it) })
+                {
+                    updateUiWithUser(it)
+                    doAsync {
+                        userDao.deleteAll()
+                        println("Writing start")
+                        userDao.insert(User(1, "login", it.displayName))
+                        println("Writing end")
+                        val intent = Intent(this, HomeActivity::class.java);
+                        startActivity(intent)
 
-            val intent = Intent(this, HomeActivity::class.java);
-            startActivity(intent)
-
+                    }.execute()
+//                    runBlocking {
+//                        userDao.insert(User(1, "login", it.displayName))
+//                    }
+                })
             setResult(Activity.RESULT_OK)
 
             //Complete and destroy login activity once successful
